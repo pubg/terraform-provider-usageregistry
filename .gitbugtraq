@@ -1,0 +1,5 @@
+[bugtraq "GITHUB"]
+	url = https://github.com/pubg/terraform-provider-usageregistry/pull/%BUGID%
+	loglinkregex = "#\\d+"
+	logregex = \\d+
+
