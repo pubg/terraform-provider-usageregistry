@@ -1,0 +1,7 @@
+# Integration with Issue Tracker
+#
+# (note that '\' need to be escaped).
+[issuetracker "Krafton GitHub Enterprise Rule"]
+  regex = "#(\\d+)"
+  url = "https://github.com/pubg/terraform-provider-usageregistry/issues/$1"
+
