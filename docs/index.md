@@ -9,7 +9,7 @@ description: |-
 
 The usageregistry provider records usage relationships in DynamoDB. It does not read or write the resources being referenced, such as Vault secrets. It only records that a consumer, such as a repository, uses a target, such as a secret path.
 
-The DynamoDB table must have a string partition key named `pk` and a string sort key named `sk`. To look up targets by consumer, add a GSI with partition key `sk` and sort key `pk`.
+The DynamoDB table must have a string partition key named `pk` and a string sort key named `sk`.
 
 ## DynamoDB Table
 
@@ -64,28 +64,25 @@ resource "aws_dynamodb_table" "usage_registry" {
     type = "S"
   }
 
-  global_secondary_index {
-    name            = "consumer-target-index"
-    hash_key        = "sk"
-    range_key       = "pk"
-    projection_type = "ALL"
-  }
 }
 ```
 
-The primary key stores usage records:
+The primary key stores forward usage record items:
 
 - `pk`: `target#<target.type>#<target.id>`
 - `sk`: `consumer#<consumer.type>#<consumer.id>`
+
+The provider also writes reverse usage record items in the same transaction:
+
+- `pk`: `consumer#<consumer.type>#<consumer.id>`
+- `sk`: `target#<target.type>#<target.id>`
 
 The same table also stores registry type items:
 
 - target types: `pk = registry#target_type`, `sk = <target_type_name>`
 - consumer types: `pk = registry#consumer_type`, `sk = <consumer_type_name>`
 
-The plural type data sources query those exact partition keys. They do not scan the table.
-
-The `consumer-target-index` GSI enables reverse lookup from a consumer to the targets it uses by querying `sk`.
+Plural data sources query exact partition keys on the base table. They do not scan the table.
 
 ## Provider Usage
 
@@ -150,6 +147,25 @@ data "usageregistry_consumer_type" "repository" {
 }
 
 data "usageregistry_consumer_types" "all" {}
+
+data "usageregistry_record" "vault_secret" {
+  target {
+    type = "vault_secret"
+    id   = "kv/secret-source/common/db"
+  }
+
+  consumer {
+    type = "repository"
+    id   = "https://git.projectbro.com/Devops/example-service"
+  }
+}
+
+data "usageregistry_records" "repository" {
+  consumer {
+    type = "repository"
+    id   = "https://git.projectbro.com/Devops/example-service"
+  }
+}
 ```
 
 You can also configure explicit static credentials:

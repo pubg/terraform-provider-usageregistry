@@ -9,7 +9,7 @@ description: |-
 
 Records that a consumer, such as a repository, uses a target, such as a Vault secret, in a DynamoDB-backed registry.
 
-The provider stores each record as one DynamoDB item keyed by a target and consumer pair. Writes use conditional expressions against the stored `version` attribute so concurrent out-of-band changes are not silently overwritten.
+The provider stores each record as two DynamoDB items: a forward item keyed by target, and a reverse item keyed by consumer. Writes use DynamoDB transactions and conditional expressions against the stored `version` attribute so concurrent out-of-band changes are not silently overwritten.
 
 The provider stores readable keys in the form `target#<target.type>#<target.id>` and `consumer#<consumer.type>#<consumer.id>`. Because `#` is the key delimiter, `target.type`, `target.id`, `consumer.type`, and `consumer.id` must not contain `#`.
 
@@ -53,12 +53,13 @@ resource "usageregistry_record" "vault_secret" {
 
 ## DynamoDB Item Shape
 
-The table must have a string partition key named `pk` and a string sort key named `sk`. To look up targets by consumer, add a GSI such as `consumer-target-index` with partition key `sk` and sort key `pk`.
+The table must have a string partition key named `pk` and a string sort key named `sk`. No GSI is required for reverse lookup because the provider stores a reverse item in the same table.
 
 ```json
 {
   "pk": "target#vault_secret#kv/secret-source/common/db",
   "sk": "consumer#repository#https://git.projectbro.com/Devops/example-service",
+  "entry_type": "usage_record",
   "target": {
     "type": "vault_secret",
     "id": "kv/secret-source/common/db",
@@ -78,7 +79,33 @@ The table must have a string partition key named `pk` and a string sort key name
 }
 ```
 
-Querying the reverse lookup GSI with `sk = "consumer#repository#https://git.projectbro.com/Devops/example-service"` returns targets used by that consumer, ordered by `pk`.
+The reverse item stores the same target, consumer, annotations, version, and timestamps, but swaps the keys:
+
+```json
+{
+  "pk": "consumer#repository#https://git.projectbro.com/Devops/example-service",
+  "sk": "target#vault_secret#kv/secret-source/common/db",
+  "entry_type": "usage_record_reverse",
+  "target": {
+    "type": "vault_secret",
+    "id": "kv/secret-source/common/db",
+    "action": "read",
+    "version": "latest"
+  },
+  "consumer": {
+    "type": "repository",
+    "id": "https://git.projectbro.com/Devops/example-service"
+  },
+  "annotations": {
+    "ownership": "platform"
+  },
+  "version": 1,
+  "created_at": "2026-06-02T00:00:00Z",
+  "updated_at": "2026-06-02T00:00:00Z"
+}
+```
+
+Querying the base table with `pk = "consumer#repository#https://git.projectbro.com/Devops/example-service"` returns targets used by that consumer.
 
 Import ID format is `record#<target_type>#<target_id>#<consumer_type>#<consumer_id>`.
 
