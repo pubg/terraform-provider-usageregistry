@@ -33,5 +33,7 @@ output "repository_type_version" {
 - `annotations` (Map of String) Additional string annotations stored with the consumer type.
 - `created_at` (String) RFC3339 timestamp when the consumer type was created.
 - `id` (String) Stable consumer type identifier. Same as `name`.
+- `id_regex` (String) Optional Go regular expression that usage record consumer IDs must match.
+- `id_regex_error_message` (String) Optional diagnostic message shown when a consumer ID does not match `id_regex`.
 - `updated_at` (String) RFC3339 timestamp when the consumer type was last updated.
 - `version` (Number) DynamoDB-backed consumer type version.

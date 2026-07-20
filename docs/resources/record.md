@@ -13,18 +13,22 @@ The provider stores each record as two DynamoDB items: a forward item keyed by t
 
 The provider stores readable keys in the form `target#<target.type>#<target.id>` and `consumer#<consumer.type>#<consumer.id>`. Because `#` is the key delimiter, `target.type`, `target.id`, `consumer.type`, and `consumer.id` must not contain `#`.
 
-`target.type`, `target.action`, and `consumer.type` are validated against registered type items during create and update. Delete does not validate the type registry.
+`target.type`, `target.action`, `target.id`, `consumer.type`, and `consumer.id` are validated against registered type items during create and update. ID validation is applied when the corresponding type has an `id_regex`; otherwise the existing non-empty and no-`#` checks apply. If that type also has a non-empty `id_regex_error_message`, the provider displays it as the ID mismatch details; otherwise it displays the default message. Delete does not validate the type registry.
 
 ## Example Usage
 
 ```terraform
 resource "usageregistry_target_type" "vault_secret" {
-  name    = "vault_secret"
-  actions = ["read"]
+  name                   = "vault_secret"
+  actions                = ["read"]
+  id_regex               = "^kv/.+$"
+  id_regex_error_message = "Target ID must start with kv/."
 }
 
 resource "usageregistry_consumer_type" "repository" {
-  name = "repository"
+  name                   = "repository"
+  id_regex               = "^https://git\\.projectbro\\.com/.+$"
+  id_regex_error_message = "Consumer ID must be a Projectbro Git repository URL."
 }
 
 resource "usageregistry_record" "vault_secret" {
@@ -133,7 +137,7 @@ Import ID format is `record#<target_type>#<target_id>#<consumer_type>#<consumer_
 Required:
 
 - `action` (String) Action performed against the target. Must be allowed by the registered target type.
-- `id` (String) Provider-defined identifier of the target being used. Must not contain `#`.
+- `id` (String) Provider-defined identifier of the target being used. Must not contain `#` and must match the target type's `id_regex` when configured.
 - `type` (String) Registered target type name. Must not contain `#`.
 
 Optional:
@@ -144,5 +148,5 @@ Optional:
 
 Required:
 
-- `id` (String) Provider-defined identifier of the consumer using the target. Must not contain `#`.
+- `id` (String) Provider-defined identifier of the consumer using the target. Must not contain `#` and must match the consumer type's `id_regex` when configured.
 - `type` (String) Registered consumer type name. Must not contain `#`.

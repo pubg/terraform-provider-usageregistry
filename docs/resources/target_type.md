@@ -9,14 +9,16 @@ description: |-
 
 Registers an allowed target type and its allowed actions in the DynamoDB-backed usage registry.
 
-Usage records referencing this target type can only use actions listed in `actions`. The provider stores this registry entry as a single DynamoDB item with `pk = "registry#target_type"` and `sk = <name>`.
+Usage records referencing this target type can only use actions listed in `actions`. When `id_regex` is set, their target IDs must also match that Go regular expression during create and update. Matching uses `regexp.MatchString`; use `^` and `$` to require a full-string match. A non-empty `id_regex_error_message` replaces the provider's default mismatch details. The provider stores this registry entry as a single DynamoDB item with `pk = "registry#target_type"` and `sk = <name>`.
 
 ## Example Usage
 
 ```terraform
 resource "usageregistry_target_type" "vault_secret" {
-  name    = "vault_secret"
-  actions = ["read"]
+  name                   = "vault_secret"
+  actions                = ["read"]
+  id_regex               = "^kv/.+$"
+  id_regex_error_message = "Target ID must start with kv/."
 
   annotations = {
     owner = "platform"
@@ -50,6 +52,8 @@ terraform import usageregistry_target_type.vault_secret vault_secret
 ### Optional
 
 - `annotations` (Map of String) Additional string annotations stored with the target type. The provider stores these values without interpreting them.
+- `id_regex` (String) Optional Go regular expression that target IDs must match during usage record creation and updates. Use `^` and `$` to require a full-string match.
+- `id_regex_error_message` (String) Optional diagnostic message shown when a target ID does not match `id_regex`. The provider uses its default message when this value is omitted or empty.
 
 ### Read-Only
 

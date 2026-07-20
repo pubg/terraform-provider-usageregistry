@@ -36,6 +36,8 @@ Read-Only:
 - `actions` (Set of String) Allowed actions for this target type.
 - `annotations` (Map of String) Additional string annotations stored with the target type.
 - `created_at` (String) RFC3339 timestamp when the target type was created.
+- `id_regex` (String) Optional Go regular expression that usage record target IDs must match.
+- `id_regex_error_message` (String) Optional diagnostic message shown when a target ID does not match `id_regex`.
 - `name` (String) Target type name.
 - `updated_at` (String) RFC3339 timestamp when the target type was last updated.
 - `version` (Number) DynamoDB-backed target type version.
