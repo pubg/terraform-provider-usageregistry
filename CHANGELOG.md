@@ -1,2 +1,2 @@
 ## Changelog   
-* 10ae961a2044e597773fb0598df8cc47211779ff fix: 트랜잭션 충돌시 재시도 추가
+* cb79db804c05f02ea83393a5d0742a02a99dfd7f fix: [PDO-702] 공통 라이브러리 전환과 transaction retry 안정화
