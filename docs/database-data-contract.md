@@ -180,7 +180,8 @@ v1#t_type#<target.type>#t_id#<target.id>#c_type#<consumer.type>#c_id#<consumer.i
 
 - 원본의 현재 `version`이 Terraform state의 expected version과 같을 때만 갱신한다.
 - 성공하면 `version`을 1 증가시키고 `updated_at`을 바꾸며 `created_at`은 유지한다.
-- Mutable payload 변경은 identity와 reference를 바꾸지 않으므로 검색 index를 갱신하지 않는다.
+- Mutable payload 변경은 identity와 reference를 바꾸지 않는다. 그러나 migration과 provider를 병렬로 운영할 수 있도록 원본 갱신과 모든 검색 index의 `ADD record_refs :reference`를 하나의 트랜잭션으로 처리한다.
+- String Set의 `ADD`는 동일한 reference에 대해 멱등이므로 이미 생성된 검색 index에도 같은 연산을 수행한다. 누락된 reference가 있으면 업데이트 과정에서 복구된다.
 - 현재 type 규약을 다시 검증하므로 type 규약을 강화한 뒤 기존 record가 이를 위반하면 payload 갱신도 실패한다.
 
 ### 8.3 삭제
@@ -226,7 +227,7 @@ go run ./cmd/migrate-search-index \
 4. 모든 원본의 검색 reference가 존재하고 reverse 항목이 0인지 확인한다.
 5. 새 provider로 전환한 뒤 writer를 다시 시작한다.
 
-Migration의 String Set ADD와 reverse 삭제는 record별 트랜잭션으로 처리하며 재실행할 수 있다. 이 저장소의 구현·검증 작업에서는 실제 DB migration을 실행하지 않는다.
+Migration의 String Set ADD와 reverse 삭제는 record별 트랜잭션으로 처리하며 재실행할 수 있다. 무중단 backfill을 사용했다면 provider 전환과 검증을 마친 뒤 역방향 항목 정리를 별도 maintenance 작업으로 수행할 수 있다. 이 저장소의 구현·검증 작업에서는 실제 DB migration을 실행하지 않는다.
 
 ## 11. DynamoDB를 직접 쓰는 구현의 필수 규약
 
@@ -235,7 +236,7 @@ Migration의 String Set ADD와 reverse 삭제는 record별 트랜잭션으로 �
 1. 원본과 필요한 검색 index Set을 같은 트랜잭션으로 생성하거나 삭제한다.
 2. Reference는 이 문서의 compact v1 encoder로 생성하며 문자열을 임의로 조합하지 않는다.
 3. 검색 Set은 전체 값을 덮어쓰지 않고 DynamoDB `ADD`와 `DELETE`로 변경한다.
-4. Identity가 아닌 payload를 갱신할 때는 원본 version 조건을 사용하고 검색 index를 변경하지 않는다.
+4. Identity가 아닌 payload를 갱신할 때는 원본 version 조건부 갱신과 모든 검색 index의 reference `ADD`를 같은 트랜잭션으로 수행한다.
 5. 빈 `id_regex`와 `id_regex_error_message`는 속성 자체를 생략한다.
 6. `target.version`을 생략하면 `latest`, `annotations`를 생략하면 빈 맵을 저장한다.
 
