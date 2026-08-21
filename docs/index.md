@@ -67,15 +67,18 @@ resource "aws_dynamodb_table" "usage_registry" {
 }
 ```
 
-The primary key stores forward usage record items:
+The primary key stores source-of-truth usage record items:
 
 - `pk`: `target#<target.type>#<target.id>`
-- `sk`: `consumer#<consumer.type>#<consumer.id>`
+- `sk`: `consumer#<consumer.type>#<consumer.id>[#sub_id#<consumer.sub_id>]`
 
-The provider also writes reverse usage record items in the same transaction:
+The provider stores compact search references under these partition keys with `sk = shard_main`:
 
-- `pk`: `consumer#<consumer.type>#<consumer.id>`
-- `sk`: `target#<target.type>#<target.id>`
+- `search_index#target#<target.type>#<target.id>`
+- `search_index#consumer#<consumer.type>#<consumer.id>`
+- `search_index#consumer#<consumer.type>#<consumer.id>#sub_id#<consumer.sub_id>`
+
+Search items use a `record_refs` String Set. Each compact v1 reference identifies one source record without copying its payload. Create and delete update the source item and search sets in one DynamoDB transaction.
 
 The same table also stores registry type items:
 
@@ -84,7 +87,7 @@ The same table also stores registry type items:
 
 Registry type items can optionally include `id_regex` to constrain IDs on future usage record creates and updates, plus `id_regex_error_message` to customize the mismatch diagnostic.
 
-Plural data sources query exact partition keys on the base table. They do not scan the table.
+Plural data sources query exact registry or search-index partition keys on the base table. They do not scan the table.
 
 ## Provider Usage
 
@@ -126,8 +129,9 @@ resource "usageregistry_record" "vault_secret" {
   }
 
   consumer {
-    type = "repository"
-    id   = "https://git.projectbro.com/Devops/example-service"
+    type   = "repository"
+    id     = "https://git.projectbro.com/Devops/example-service"
+    sub_id = "prod"
   }
 
   annotations = {
@@ -137,7 +141,7 @@ resource "usageregistry_record" "vault_secret" {
 }
 ```
 
-`usageregistry_record` validates `target.type`, `target.action`, `target.id`, `consumer.type`, and `consumer.id` against registered type items during create and update. `id_regex` is optional; when omitted, any non-empty ID without `#` remains valid. Regular expressions use Go syntax and `regexp.MatchString` semantics, so use `^` and `$` when the entire ID must match. A non-empty `id_regex_error_message` replaces the default ID mismatch details; an omitted or empty value keeps the provider default. Changing a type's regex does not rewrite existing records. Delete does not validate the type registry.
+`usageregistry_record` validates `target.type`, `target.action`, `target.id`, `consumer.type`, and `consumer.id` against registered type items during create and update. Optional `consumer.sub_id` distinguishes multiple records with the same consumer ID and must not be empty or contain `#` when configured. The consumer type's `id_regex` applies only to `consumer.id`. Changing a type's regex does not rewrite existing records. Delete does not validate the type registry.
 
 You can read one registered type or list all registered types:
 
@@ -168,8 +172,9 @@ data "usageregistry_record" "vault_secret" {
 
 data "usageregistry_records" "repository" {
   consumer {
-    type = "repository"
-    id   = "https://git.projectbro.com/Devops/example-service"
+    type   = "repository"
+    id     = "https://git.projectbro.com/Devops/example-service"
+    sub_id = "prod"
   }
 }
 ```

@@ -19,6 +19,14 @@ data "usageregistry_records" "repository" {
   }
 }
 
+data "usageregistry_records" "repository_prod" {
+  consumer {
+    type   = "repository"
+    id     = "https://git.projectbro.com/Devops/example-service"
+    sub_id = "prod"
+  }
+}
+
 data "usageregistry_records" "vault_secret" {
   target {
     type = "vault_secret"
@@ -58,6 +66,10 @@ Required:
 - `id` (String) Provider-defined consumer identifier. Must not contain `#`.
 - `type` (String) Consumer type name. Must not contain `#`.
 
+Optional:
+
+- `sub_id` (String) Optional consumer sub-ID filter. When omitted, all sub-IDs for the consumer are returned.
+
 ### Nested Schema for `records`
 
 Read-Only:
@@ -85,3 +97,4 @@ Read-Only:
 
 - `id` (String) Provider-defined consumer identifier.
 - `type` (String) Consumer type name.
+- `sub_id` (String) Optional identifier that distinguishes one usage for the consumer.

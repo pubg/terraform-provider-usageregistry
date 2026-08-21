@@ -19,8 +19,9 @@ data "usageregistry_record" "vault_secret" {
   }
 
   consumer {
-    type = "repository"
-    id   = "https://git.projectbro.com/Devops/example-service"
+    type   = "repository"
+    id     = "https://git.projectbro.com/Devops/example-service"
+    sub_id = "prod"
   }
 }
 
@@ -63,3 +64,7 @@ Required:
 
 - `id` (String) Provider-defined consumer identifier. Must not contain `#`.
 - `type` (String) Consumer type name. Must not contain `#`.
+
+Optional:
+
+- `sub_id` (String) Optional identifier that selects one usage for the consumer. Must not be empty or contain `#`.
