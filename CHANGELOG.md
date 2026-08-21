@@ -1,2 +1,2 @@
 ## Changelog   
-* af948c6a0c5817585ee38e2c01184af42a9b32f0 fix: 누락된 파일 업로드
+* 10ae961a2044e597773fb0598df8cc47211779ff fix: 트랜잭션 충돌시 재시도 추가
