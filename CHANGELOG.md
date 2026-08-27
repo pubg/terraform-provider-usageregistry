@@ -1,3 +1,2 @@
 ## Changelog   
-* ec086db3ad93b98970459f907108ad233f95ebcd fix: delete legacy store access code   
-* b81167abf72bc21274f439e149585f385e3c9aa1 feat: [PDO-702] sub_id regex 추가
+* 5a8e515321d70939d3b136cbe9df36e94b9e12e0 fix: Usage Registry transaction 충돌 재시도 확대 (!2)
