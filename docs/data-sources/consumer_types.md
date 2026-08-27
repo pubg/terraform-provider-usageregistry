@@ -38,5 +38,7 @@ Read-Only:
 - `id_regex` (String) Optional Go regular expression that usage record consumer IDs must match.
 - `id_regex_error_message` (String) Optional diagnostic message shown when a consumer ID does not match `id_regex`.
 - `name` (String) Consumer type name.
+- `sub_id_regex` (String) Optional Go regular expression that non-empty usage record consumer sub-IDs must match.
+- `sub_id_regex_error_message` (String) Optional diagnostic message shown when a consumer sub-ID does not match `sub_id_regex`.
 - `updated_at` (String) RFC3339 timestamp when the consumer type was last updated.
 - `version` (Number) DynamoDB-backed consumer type version.

@@ -89,4 +89,4 @@ Required:
 
 Optional:
 
-- `sub_id` (String) Distinguishes multiple usage records with the same consumer ID. Must not be empty or contain `#`.
+- `sub_id` (String) Distinguishes multiple usage records with the same consumer ID. Must not be empty or contain `#`, and must match the consumer type's `sub_id_regex` when configured.

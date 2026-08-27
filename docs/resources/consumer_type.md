@@ -9,15 +9,17 @@ description: |-
 
 Registers an allowed consumer type in the DynamoDB-backed usage registry.
 
-Usage records referencing this consumer type are accepted only after the type is registered. When `id_regex` is set, their consumer IDs must also match that Go regular expression during create and update. Matching uses `regexp.MatchString`; use `^` and `$` to require a full-string match. A non-empty `id_regex_error_message` replaces the provider's default mismatch details. The provider stores this registry entry as a single DynamoDB item with `pk = "registry#consumer_type"` and `sk = <name>`.
+Usage records referencing this consumer type are accepted only after the type is registered. When `id_regex` or `sub_id_regex` is set, their consumer IDs or non-empty consumer sub-IDs must match the corresponding Go regular expression during create and update. Matching uses `regexp.MatchString`; use `^` and `$` to require a full-string match. A non-empty error message replaces the provider's default mismatch details. The provider stores this registry entry as a single DynamoDB item with `pk = "registry#consumer_type"` and `sk = <name>`.
 
 ## Example Usage
 
 ```terraform
 resource "usageregistry_consumer_type" "repository" {
-  name                   = "repository"
-  id_regex               = "^https://git\\.projectbro\\.com/.+$"
-  id_regex_error_message = "Consumer ID must be a Projectbro Git repository URL."
+  name                       = "repository"
+  id_regex                   = "^https://git\\.projectbro\\.com/.+$"
+  id_regex_error_message     = "Consumer ID must be a Projectbro Git repository URL."
+  sub_id_regex               = "^(dev|prod)$"
+  sub_id_regex_error_message = "Consumer sub-ID must be dev or prod."
 
   annotations = {
     owner = "platform"
@@ -45,6 +47,8 @@ terraform import usageregistry_consumer_type.repository repository
 - `annotations` (Map of String) Additional string annotations stored with the consumer type. The provider stores these values without interpreting them.
 - `id_regex` (String) Optional Go regular expression that consumer IDs must match during usage record creation and updates. Use `^` and `$` to require a full-string match.
 - `id_regex_error_message` (String) Optional diagnostic message shown when a consumer ID does not match `id_regex`. The provider uses its default message when this value is omitted or empty.
+- `sub_id_regex` (String) Optional Go regular expression that non-empty consumer sub-IDs must match during usage record creation and updates. Use `^` and `$` to require a full-string match.
+- `sub_id_regex_error_message` (String) Optional diagnostic message shown when a consumer sub-ID does not match `sub_id_regex`. The provider uses its default message when this value is omitted or empty.
 
 ### Read-Only
 

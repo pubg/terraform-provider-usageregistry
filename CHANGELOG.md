@@ -1,2 +1,3 @@
 ## Changelog   
-* cb79db804c05f02ea83393a5d0742a02a99dfd7f fix: [PDO-702] 공통 라이브러리 전환과 transaction retry 안정화
+* ec086db3ad93b98970459f907108ad233f95ebcd fix: delete legacy store access code   
+* b81167abf72bc21274f439e149585f385e3c9aa1 feat: [PDO-702] sub_id regex 추가

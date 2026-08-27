@@ -85,7 +85,7 @@ The same table also stores registry type items:
 - target types: `pk = registry#target_type`, `sk = <target_type_name>`
 - consumer types: `pk = registry#consumer_type`, `sk = <consumer_type_name>`
 
-Registry type items can optionally include `id_regex` to constrain IDs on future usage record creates and updates, plus `id_regex_error_message` to customize the mismatch diagnostic.
+Registry type items can optionally include `id_regex` to constrain IDs on future usage record creates and updates, plus `id_regex_error_message` to customize the mismatch diagnostic. Consumer types can also include `sub_id_regex` and `sub_id_regex_error_message` for non-empty consumer sub-IDs.
 
 Plural data sources query exact registry or search-index partition keys on the base table. They do not scan the table.
 
@@ -110,9 +110,11 @@ resource "usageregistry_target_type" "vault_secret" {
 resource "usageregistry_consumer_type" "repository" {
   depends_on = [aws_dynamodb_table.usage_registry]
 
-  name                   = "repository"
-  id_regex               = "^https://git\\.projectbro\\.com/.+$"
-  id_regex_error_message = "Consumer ID must be a Projectbro Git repository URL."
+  name                       = "repository"
+  id_regex                   = "^https://git\\.projectbro\\.com/.+$"
+  id_regex_error_message     = "Consumer ID must be a Projectbro Git repository URL."
+  sub_id_regex               = "^(dev|prod)$"
+  sub_id_regex_error_message = "Consumer sub-ID must be dev or prod."
 }
 
 resource "usageregistry_record" "vault_secret" {
@@ -141,7 +143,7 @@ resource "usageregistry_record" "vault_secret" {
 }
 ```
 
-`usageregistry_record` validates `target.type`, `target.action`, `target.id`, `consumer.type`, and `consumer.id` against registered type items during create and update. Optional `consumer.sub_id` distinguishes multiple records with the same consumer ID and must not be empty or contain `#` when configured. The consumer type's `id_regex` applies only to `consumer.id`. Changing a type's regex does not rewrite existing records. Delete does not validate the type registry.
+`usageregistry_record` validates `target.type`, `target.action`, `target.id`, `consumer.type`, and `consumer.id` against registered type items during create and update. Optional `consumer.sub_id` distinguishes multiple records with the same consumer ID and must not be empty or contain `#` when configured. It must also match the consumer type's `sub_id_regex` when set. Changing a type's regex does not rewrite existing records. Delete does not validate the type registry.
 
 You can read one registered type or list all registered types:
 
