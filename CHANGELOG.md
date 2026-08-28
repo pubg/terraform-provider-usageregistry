@@ -1,2 +1,2 @@
 ## Changelog   
-* 5a8e515321d70939d3b136cbe9df36e94b9e12e0 fix: Usage Registry transaction 충돌 재시도 확대 (!2)
+* 270bf63a9d82f5cd466fce85b8a5a45881c30c08 feat: 기본 consumer 식별자 설정 추가

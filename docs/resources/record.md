@@ -9,6 +9,8 @@ description: |-
 
 Records that a consumer uses a target. `consumer.sub_id` optionally distinguishes multiple records that use the same target and consumer ID.
 
+When the provider configures `default_consumer`, the record can omit `consumer.type` and `consumer.id`; explicit record values override the provider defaults. `consumer.sub_id` is always record-specific.
+
 The provider stores one source-of-truth item plus compact target and consumer search references. Create and delete update the source and search String Sets in one transaction. Mutable payload updates use the source item's `version` for compare-and-swap concurrency control.
 
 ## Example Usage
@@ -82,11 +84,8 @@ Optional:
 
 ### Nested Schema for `consumer`
 
-Required:
-
-- `id` (String) Provider-defined consumer identifier. Must match the consumer type's `id_regex` when configured.
-- `type` (String) Registered consumer type name.
-
 Optional:
 
+- `id` (String) Provider-defined consumer identifier. Uses `provider.default_consumer.id` when omitted. Must match the consumer type's `id_regex` when configured.
 - `sub_id` (String) Distinguishes multiple usage records with the same consumer ID. Must not be empty or contain `#`, and must match the consumer type's `sub_id_regex` when configured.
+- `type` (String) Registered consumer type name. Uses `provider.default_consumer.type` when omitted.

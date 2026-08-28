@@ -96,6 +96,11 @@ provider "usageregistry" {
   dynamodb_table = local.usage_registry_table_name
   region         = var.region
   profile        = var.profile
+
+  default_consumer {
+    type = "repository"
+    id   = "https://git.projectbro.com/Devops/example-service"
+  }
 }
 
 resource "usageregistry_target_type" "vault_secret" {
@@ -131,8 +136,6 @@ resource "usageregistry_record" "vault_secret" {
   }
 
   consumer {
-    type   = "repository"
-    id     = "https://git.projectbro.com/Devops/example-service"
     sub_id = "prod"
   }
 
@@ -142,6 +145,8 @@ resource "usageregistry_record" "vault_secret" {
   }
 }
 ```
+
+When `default_consumer` is configured, `usageregistry_record.consumer.type` and `consumer.id` use those provider values when omitted. Record-level values override the defaults. `consumer.sub_id` is never inherited and must be configured on each record when needed.
 
 `usageregistry_record` validates `target.type`, `target.action`, `target.id`, `consumer.type`, and `consumer.id` against registered type items during create and update. Optional `consumer.sub_id` distinguishes multiple records with the same consumer ID and must not be empty or contain `#` when configured. It must also match the consumer type's `sub_id_regex` when set. Changing a type's regex does not rewrite existing records. Delete does not validate the type registry.
 
@@ -207,3 +212,14 @@ If neither `profile` nor `access_key`/`secret_key` are configured, the provider 
 - `region` (String) AWS region for DynamoDB. If omitted, the AWS SDK default region resolution is used.
 - `secret_key` (String, Sensitive) AWS secret access key to use explicitly. Must be set with `access_key`.
 - `token` (String, Sensitive) Optional AWS session token to use with explicit access key credentials.
+
+### Optional Blocks
+
+- `default_consumer` (Block, max 1) Default consumer identifier for usage records. Both `type` and `id` must be set when this block is configured. Record-level `consumer.type` and `consumer.id` override these values. Consumer sub-IDs must be configured on each record.
+
+### Nested Schema for `default_consumer`
+
+Optional:
+
+- `id` (String) Default consumer identifier. Must not be empty or contain `#`, and must match the consumer type's `id_regex` when a usage record is created or updated.
+- `type` (String) Default registered consumer type name. Must not be empty or contain `#`.
