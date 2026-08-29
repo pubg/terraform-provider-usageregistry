@@ -1,2 +1,2 @@
 ## Changelog   
-* 270bf63a9d82f5cd466fce85b8a5a45881c30c08 feat: 기본 consumer 식별자 설정 추가
+* 24220237d9aa9e82dd9ac3294dde86be3e37f88c feat: 트랜잭션 재시도 횟수 설정 추가

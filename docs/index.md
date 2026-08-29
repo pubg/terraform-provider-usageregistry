@@ -212,6 +212,7 @@ If neither `profile` nor `access_key`/`secret_key` are configured, the provider 
 - `region` (String) AWS region for DynamoDB. If omitted, the AWS SDK default region resolution is used.
 - `secret_key` (String, Sensitive) AWS secret access key to use explicitly. Must be set with `access_key`.
 - `token` (String, Sensitive) Optional AWS session token to use with explicit access key credentials.
+- `transaction_retry_max_attempts` (Number) Maximum total DynamoDB transaction attempts, including the initial request. Defaults to 16. Increase only for workspaces with sustained `TransactionConflict` contention.
 
 ### Optional Blocks
 
