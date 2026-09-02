@@ -1,2 +1,2 @@
 ## Changelog   
-* 4f2efc1f977910e3901ce85e0c8a2dabd6a742ef feat: [PDO-1006] AWS Assume Role 인증 지원 (!3)
+* 30b6b3977d8d834fd19765117e3c006361136168 fix: [PDO-1006] 선택 인증 블록의 필수 검증 수정

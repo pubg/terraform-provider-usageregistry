@@ -255,24 +255,18 @@ provider "usageregistry" {
 
 ### Nested Schema for `assume_role`
 
-Required:
-
-- `role_arn` (String) ARN of the IAM role to assume.
-
 Optional:
 
 - `external_id` (String) Optional external ID passed to STS AssumeRole.
+- `role_arn` (String) ARN of the IAM role to assume. Required when this block is configured.
 - `session_name` (String) Role session name. Defaults to `terraform-provider-usageregistry`.
 
 ### Nested Schema for `assume_role_with_web_identity`
 
-Required:
-
-- `id_token` (String, Sensitive) OIDC ID token used as the source identity for STS AssumeRoleWithWebIdentity.
-- `role_arn` (String) ARN of the IAM role to assume.
-
 Optional:
 
+- `id_token` (String, Sensitive) OIDC ID token used as the source identity for STS AssumeRoleWithWebIdentity. Required when this block is configured.
+- `role_arn` (String) ARN of the IAM role to assume. Required when this block is configured.
 - `session_name` (String) Role session name. Defaults to `terraform-provider-usageregistry`.
 
 ### Nested Schema for `default_consumer`
