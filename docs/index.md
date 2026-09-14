@@ -9,7 +9,7 @@ description: |-
 
 The usageregistry provider records usage relationships in DynamoDB. It does not read or write the resources being referenced, such as Vault secrets. It only records that a consumer, such as a repository, uses a target, such as a secret path.
 
-The DynamoDB table must have a string partition key named `pk` and a string sort key named `sk`.
+The DynamoDB table must have string keys named `pk` and `sk`, plus a `consumer-index` GSI with `consumer_index_pk` and `sk` as its keys.
 
 ## DynamoDB Table
 
@@ -64,6 +64,17 @@ resource "aws_dynamodb_table" "usage_registry" {
     type = "S"
   }
 
+  attribute {
+    name = "consumer_index_pk"
+    type = "S"
+  }
+
+  global_secondary_index {
+    name            = "consumer-index"
+    hash_key        = "consumer_index_pk"
+    range_key       = "sk"
+    projection_type = "KEYS_ONLY"
+  }
 }
 ```
 
@@ -72,13 +83,7 @@ The primary key stores source-of-truth usage record items:
 - `pk`: `target#<target.type>#<target.id>`
 - `sk`: `consumer#<consumer.type>#<consumer.id>[#sub_id#<consumer.sub_id>]`
 
-The provider stores compact search references under these partition keys with `sk = shard_main`:
-
-- `search_index#target#<target.type>#<target.id>`
-- `search_index#consumer#<consumer.type>#<consumer.id>`
-- `search_index#consumer#<consumer.type>#<consumer.id>#sub_id#<consumer.sub_id>`
-
-Search items use a `record_refs` String Set. Each compact v1 reference identifies one source record without copying its payload. Create and delete update the source item and search sets in one DynamoDB transaction.
+Each usage record also stores `consumer_index_pk = consumer#<consumer.type>#<consumer.id>`. Target lookups query the base table strongly consistently. Consumer lookups query the `consumer-index` GSI and then strongly consistently fetch the source records from the base table. Create, update, and delete use conditional single-item requests and do not maintain legacy search-index items.
 
 The same table also stores registry type items:
 
@@ -87,7 +92,7 @@ The same table also stores registry type items:
 
 Registry type items can optionally include `id_regex` to constrain IDs on future usage record creates and updates, plus `id_regex_error_message` to customize the mismatch diagnostic. Consumer types can also include `sub_id_regex` and `sub_id_regex_error_message` for non-empty consumer sub-IDs.
 
-Plural data sources query exact registry or search-index partition keys on the base table. They do not scan the table.
+Plural type data sources query the registry partitions. Usage record data sources use exact target or consumer indexes when IDs are supplied and scan the table for type-only filters.
 
 ## Provider Usage
 
@@ -96,6 +101,11 @@ provider "usageregistry" {
   dynamodb_table = local.usage_registry_table_name
   region         = var.region
   profile        = var.profile
+
+  default_annotations = {
+    environment = terraform.workspace
+    owner       = "platform"
+  }
 
   default_consumer {
     type = "repository"
@@ -146,7 +156,7 @@ resource "usageregistry_record" "vault_secret" {
 }
 ```
 
-When `default_consumer` is configured, `usageregistry_record.consumer.type` and `consumer.id` use those provider values when omitted. Record-level values override the defaults. `consumer.sub_id` is never inherited and must be configured on each record when needed.
+When `default_consumer` is configured, `usageregistry_record.consumer.type` and `consumer.id` use those provider values when omitted. Record-level values override the defaults. `consumer.sub_id` is never inherited and must be configured on each record when needed. `default_annotations` are merged into every stored usage record, and record-level annotations override matching keys. The resource's `annotations` value contains only explicit record annotations; `effective_annotations` exposes the merged result.
 
 `usageregistry_record` validates `target.type`, `target.action`, `target.id`, `consumer.type`, and `consumer.id` against registered type items during create and update. Optional `consumer.sub_id` distinguishes multiple records with the same consumer ID and must not be empty or contain `#` when configured. It must also match the consumer type's `sub_id_regex` when set. Changing a type's regex does not rewrite existing records. Delete does not validate the type registry.
 
@@ -239,13 +249,13 @@ provider "usageregistry" {
 ### Optional
 
 - `access_key` (String, Sensitive) AWS access key ID to use as source credentials. Must be set with `secret_key` and conflicts with `assume_role_with_web_identity`.
+- `default_annotations` (Map of String) Default string annotations for usage records. Record-level annotations override values with the same key.
 - `dynamodb_endpoint` (String) Optional DynamoDB endpoint override, useful for DynamoDB Local.
 - `dynamodb_table` (String) DynamoDB table used to store usage records. Can also be set with `USAGEREGISTRY_DYNAMODB_TABLE`.
 - `profile` (String) AWS shared configuration profile to use as source credentials. Conflicts with `access_key`, `secret_key`, `token`, and `assume_role_with_web_identity`.
 - `region` (String) AWS region for DynamoDB. If omitted, the AWS SDK default region resolution is used.
 - `secret_key` (String, Sensitive) AWS secret access key to use as source credentials. Must be set with `access_key` and conflicts with `assume_role_with_web_identity`.
 - `token` (String, Sensitive) Optional AWS session token to use with explicit access key source credentials. Conflicts with `assume_role_with_web_identity`.
-- `transaction_retry_max_attempts` (Number) Maximum total DynamoDB transaction attempts, including the initial request. Defaults to 16. Increase only for workspaces with sustained `TransactionConflict` contention.
 
 ### Optional Blocks
 

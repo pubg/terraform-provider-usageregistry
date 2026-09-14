@@ -1,2 +1,3 @@
 ## Changelog   
-* 30b6b3977d8d834fd19765117e3c006361136168 fix: [PDO-1006] 선택 인증 블록의 필수 검증 수정
+* dc24c55210ba25921a38132578d3eb56ba28c0f8 feat: consumer GSI 전환과 backfill 지원 (!5)   
+* c6675dbfbcbbdc1d99f28bd83fbe7447dcdc18e9 feat: 기본 annotation 설정 추가 (!4)

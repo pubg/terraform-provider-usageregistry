@@ -9,7 +9,7 @@ description: |-
 
 Records that a consumer uses a target. `consumer.sub_id` optionally distinguishes multiple records that use the same target and consumer ID.
 
-When the provider configures `default_consumer`, the record can omit `consumer.type` and `consumer.id`; explicit record values override the provider defaults. `consumer.sub_id` is always record-specific.
+When the provider configures `default_consumer`, the record can omit `consumer.type` and `consumer.id`; explicit record values override the provider defaults. `consumer.sub_id` is always record-specific. Provider-level `default_annotations` are merged into the stored record, and explicit record annotations override matching keys. `annotations` contains only the explicit values; `effective_annotations` exposes the merged result.
 
 The provider stores one source-of-truth item plus compact target and consumer search references. Create and delete update the source and search String Sets in one transaction. Mutable payload updates use the source item's `version` for compare-and-swap concurrency control.
 
@@ -61,11 +61,12 @@ record#<target_type>#<target_id>#<consumer_type>#<consumer_id>#sub_id#<sub_id>
 
 ### Optional
 
-- `annotations` (Map of String) Additional string annotations stored with the usage record.
+- `annotations` (Map of String) Additional explicit string annotations for the usage record. Values override provider-level `default_annotations` with the same key.
 
 ### Read-Only
 
 - `created_at` (String) RFC3339 timestamp when the record was created.
+- `effective_annotations` (Map of String) Effective annotations stored with the usage record after merging provider-level defaults and record-level annotations.
 - `id` (String) Stable importable record identifier.
 - `updated_at` (String) RFC3339 timestamp when the record was last updated.
 - `version` (Number) DynamoDB-backed record version used for compare-and-swap updates.
