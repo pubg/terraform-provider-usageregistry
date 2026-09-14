@@ -1,2 +1,2 @@
 ## Changelog   
-* 77fd75b90285a30f2c65afbebc7ce726b8174d30 fix: 테스트 케이스 추가, 의도와 다른 스키마 버그 수정
+* 90b225c36bcd332a5aec5ced2055423aeb0509d6 fix: 호환성을 위해 no-op 필드 추가
