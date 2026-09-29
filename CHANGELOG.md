@@ -1,2 +1,3 @@
 ## Changelog   
-* 7d0bcd256a3e0a8eed35b38a62ecb7edd172aae1 fix: record state를 마이그레이션하고 update plan 불일치를 수정 (!6)
+* 379457da6cb3073f905d20545dbc76fc2351d480 feat: DynamoDB 오류 진단에 상세 문맥 추가   
+* ebc75b3be4d0a1b4747525bfc82d7efff0773b72 feat: backfill 스크립트 추가
