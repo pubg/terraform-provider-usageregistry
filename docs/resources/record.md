@@ -28,13 +28,13 @@ resource "usageregistry_consumer_type" "repository" {
 resource "usageregistry_record" "vault_secret" {
   target {
     type   = "vault_secret"
-    id     = "kv/secret-source/common/db"
+    id     = "kv/example/database"
     action = "read"
   }
 
   consumer {
     type   = "repository"
-    id     = "https://git.projectbro.com/Devops/example-service"
+    id     = "https://git.example.com/team/example-service"
     sub_id = "prod"
   }
 

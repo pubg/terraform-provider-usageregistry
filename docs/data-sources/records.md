@@ -15,14 +15,14 @@ Lists usage records by either target or consumer. Configure exactly one `target`
 data "usageregistry_records" "repository" {
   consumer {
     type = "repository"
-    id   = "https://git.projectbro.com/Devops/example-service"
+    id   = "https://git.example.com/team/example-service"
   }
 }
 
 data "usageregistry_records" "repository_prod" {
   consumer {
     type   = "repository"
-    id     = "https://git.projectbro.com/Devops/example-service"
+    id     = "https://git.example.com/team/example-service"
     sub_id = "prod"
   }
 }
@@ -30,7 +30,7 @@ data "usageregistry_records" "repository_prod" {
 data "usageregistry_records" "vault_secret" {
   target {
     type = "vault_secret"
-    id   = "kv/secret-source/common/db"
+    id   = "kv/example/database"
   }
 }
 

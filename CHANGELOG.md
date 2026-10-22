@@ -1,3 +1,15 @@
-## Changelog   
-* 379457da6cb3073f905d20545dbc76fc2351d480 feat: DynamoDB 오류 진단에 상세 문맥 추가   
-* ebc75b3be4d0a1b4747525bfc82d7efff0773b72 feat: backfill 스크립트 추가
+## 0.3.0 (Unreleased)
+
+FEATURES:
+
+* Add optional `consumer.sub_id` record identities and compact, shard-ready search indexes.
+* Add a dry-run-first migration command for replacing legacy reverse records.
+* Add an index-only backfill command and repair missing search references during record updates.
+* Add a dry-run-first command for removing legacy search-index items.
+
+## 0.1.0 (Unreleased)
+
+FEATURES:
+
+* Initial usageregistry provider with `usageregistry_record`.
+* Add optional `id_regex` constraints and custom `id_regex_error_message` diagnostics to target and consumer types.

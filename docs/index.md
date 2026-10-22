@@ -36,11 +36,11 @@ variable "region" {
 
 variable "profile" {
   type    = string
-  default = "platform-prod"
+  default = "example"
 }
 
 locals {
-  usage_registry_table_name = "resource-usage-registry"
+  usage_registry_table_name = "example-usage-registry"
 }
 
 provider "aws" {
@@ -109,7 +109,7 @@ provider "usageregistry" {
 
   default_consumer {
     type = "repository"
-    id   = "https://git.projectbro.com/Devops/example-service"
+    id   = "https://git.example.com/team/example-service"
   }
 }
 
@@ -126,8 +126,8 @@ resource "usageregistry_consumer_type" "repository" {
   depends_on = [aws_dynamodb_table.usage_registry]
 
   name                       = "repository"
-  id_regex                   = "^https://git\\.projectbro\\.com/.+$"
-  id_regex_error_message     = "Consumer ID must be a Projectbro Git repository URL."
+  id_regex                   = "^https://git\\.example\\.com/.+$"
+  id_regex_error_message     = "Consumer ID must be a Git repository URL under git.example.com."
   sub_id_regex               = "^(dev|prod)$"
   sub_id_regex_error_message = "Consumer sub-ID must be dev or prod."
 }
@@ -140,7 +140,7 @@ resource "usageregistry_record" "vault_secret" {
 
   target {
     type    = "vault_secret"
-    id      = "kv/secret-source/common/db"
+    id      = "kv/example/database"
     action  = "read"
     version = "latest"
   }
@@ -178,19 +178,19 @@ data "usageregistry_consumer_types" "all" {}
 data "usageregistry_record" "vault_secret" {
   target {
     type = "vault_secret"
-    id   = "kv/secret-source/common/db"
+    id   = "kv/example/database"
   }
 
   consumer {
     type = "repository"
-    id   = "https://git.projectbro.com/Devops/example-service"
+    id   = "https://git.example.com/team/example-service"
   }
 }
 
 data "usageregistry_records" "repository" {
   consumer {
     type   = "repository"
-    id     = "https://git.projectbro.com/Devops/example-service"
+    id     = "https://git.example.com/team/example-service"
     sub_id = "prod"
   }
 }

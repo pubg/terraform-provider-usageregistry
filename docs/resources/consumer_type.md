@@ -16,8 +16,8 @@ Usage records referencing this consumer type are accepted only after the type is
 ```terraform
 resource "usageregistry_consumer_type" "repository" {
   name                       = "repository"
-  id_regex                   = "^https://git\\.projectbro\\.com/.+$"
-  id_regex_error_message     = "Consumer ID must be a Projectbro Git repository URL."
+  id_regex                   = "^https://git\\.example\\.com/.+$"
+  id_regex_error_message     = "Consumer ID must be a Git repository URL under git.example.com."
   sub_id_regex               = "^(dev|prod)$"
   sub_id_regex_error_message = "Consumer sub-ID must be dev or prod."
 
